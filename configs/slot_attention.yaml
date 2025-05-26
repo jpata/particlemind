@@ -1,0 +1,67 @@
+# config.yaml
+data_params:
+  max_true_clusters: 32
+  max_hits_per_batch_item: 512
+  avg_true_clusters: 16.0
+  avg_hits_per_cluster: 20.0
+  batch_size: 512
+  eval_batch_size: 128
+  ensure_min_one_hit_per_cluster: False
+  F_in_hits: 3
+  F_cluster_out_gt: 3
+
+model_params:
+  k_max_factor_of_max_true_clusters: 1.0 # k_max will be data_params.max_true_clusters * this factor
+  query_dim_for_slots: 32
+  head_dim_total: 32
+  value_dim_total: 32
+  num_attention_layers: 8
+  num_heads: 4
+  mlp_hidden_dim_multiplier: 2
+  existence_logit_bias_init: -2.0
+
+  slot_initialization:
+    use_dbscan: False
+    use_voxel_transformer: False
+
+  dbscan_params: # Only used if slot_initialization.use_dbscan is True
+    eps: 0.1
+    min_samples: 5
+
+  voxel_transformer_params: # Only used if slot_initialization.use_voxel_transformer is True
+    grid_size: 0.2
+    hit_embed_mlp_hidden_dims: [64]
+    voxel_dim: 64 # Dimension of aggregated voxel features. Can be null to default to query_dim_for_slots.
+    transformer_model_dim: 128
+    transformer_nhead: 4
+    transformer_nlayers: 3
+    transformer_dim_feedforward: 256
+    transformer_dropout: 0.1
+    max_voxels_per_item: 128
+    spatial_dims_for_grid: 3 # Must be <= data_params.F_in_hits
+
+training_params:
+  num_epochs: 100
+  learning_rate: 0.0001
+  gradient_clip_val: 1.0
+  train_print_interval: 100
+  eval_every_n_epochs: 1
+  num_pregenerated_training_batches: 512
+
+loss_params:
+  lambda_feat: 1.0
+  lambda_exist: 5.0
+  lambda_diversity: 0.1
+  geomloss_sigma_diversity_value: 0.1
+  epsilon_diversity_weight_norm_value: 1.0e-8
+  cost_type_feature_loss: 'L1' # Options: 'L1', 'L2_sq'
+  geomloss_blur_train: 0.05
+  geomloss_nits_train: 10
+
+eval_params:
+  existence_threshold: 0.5
+
+profiler_params:
+  enabled: False
+  warmup_steps: 1
+  active_steps: 5
