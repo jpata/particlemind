@@ -1,8 +1,5 @@
 [core]
-    remote = manivald-local
+    remote = cern-jpata
 
-['remote "manivald-ssh"']
-    url = ssh://joosep@manivald.hep.kbfi.ee:/scratch/persistent/joosep/dvc/particlemind
-
-['remote "manivald-local"']
-    url = /scratch/persistent/joosep/dvc/particlemind
+['remote "cern-jpata"']
+    url = https://jpata.web.cern.ch/dvc/particlemind
