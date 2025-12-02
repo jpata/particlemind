@@ -9,7 +9,7 @@ import random
 import logging
 
 
-def get_hit_labels(hit_idx, gen_idx, weights):
+def get_hit_labels(hit_idx, gen_idx, weights, max_hits=None):
     """
     Assign labels to hits based on the genparticle index with the highest weight.
 
@@ -22,7 +22,9 @@ def get_hit_labels(hit_idx, gen_idx, weights):
         np.ndarray: Array of labels for each hit, where each label corresponds to the genparticle index.
     """
     # Initialize an array to store labels for each hit
-    hit_labels = np.full(np.max(hit_idx) + 1, -1, dtype=int)  # Default label is -1 (unclassified)
+    if not max_hits:
+        max_hits = np.max(hit_idx) + 1
+    hit_labels = np.full(max_hits, -1, dtype=int)  # Default label is -1 (unclassified)
     hit_label_weights = dict()  # To keep track of the highest weight for each hit
 
     # Iterate through the sparse COO matrix data
@@ -122,6 +124,7 @@ class CLDHits(IterableDataset):
                     self.sample_counter += 1
 
                 genparticle_to_calo_hit_matrix = data["genparticle_to_calo_hit_matrix"][event_i]
+                cluster_to_cluster_hit_matrix = data["cluster_to_cluster_hit_matrix"][event_i]
                 calo_hit_features = data["calo_hit_features"][event_i]
 
                 gen_idx = genparticle_to_calo_hit_matrix["gen_idx"].to_numpy()
@@ -141,12 +144,20 @@ class CLDHits(IterableDataset):
                     hit_idx, gen_idx, weights
                 )  # This could be moved to the pre-processing step if needed
 
+                hit_labels2 = get_hit_labels(
+                    cluster_to_cluster_hit_matrix["hit_idx"],
+                    cluster_to_cluster_hit_matrix["cluster_idx"],
+                    cluster_to_cluster_hit_matrix["weight"],
+                    max_hits = np.max(hit_idx)+1
+                )
+
                 if self.by_event:
                     yield {
                         # "gen_idx": gen_idx,
                         # "hit_idx": hit_idx,
                         # "weights": weights,
                         "hit_labels": hit_labels,
+                        "hit_labels_pandora": hit_labels2,
                         "calo_hit_features": calo_hit_features,
                     }
 
